@@ -1,20 +1,20 @@
 import clsx from "clsx"
-import { memo, useEffect, useMemo, useRef } from "react"
+import { memo, useEffect, useRef } from "react"
 import { EditorView, keymap } from "@codemirror/view"
 import { indentWithTab } from "@codemirror/commands"
 import { basicSetup } from "codemirror"
 import { LspProvider } from "./language"
 import { Extension } from "@codemirror/state"
 import { KeymapProvider } from "./keymap"
-import { Atom } from "jotai"
+import { Atom, useAtomValue } from "jotai"
 import { Source } from "@/store/source/model"
 import { concat, map } from "lodash/fp"
 import "@fontsource/jetbrains-mono"
-import useExtensionCompartment, { useCommonConfigurationExtension } from "@/hooks/useExtensionCompartment"
+import useExtensionCompartment, { useCommonConfigurationExtension } from "@/lib/hooks/useExtensionCompartment"
 import { UndoManager } from "yjs"
-import cache from "@/lib/fs/cache"
 // @ts-ignore
 import { yCollab } from "y-codemirror.next"
+import { awarenessAtom } from "@/store/source"
 
 type CodemirrorProps = {
   className?: string
@@ -51,14 +51,7 @@ const Codemirror = memo((props: CodemirrorProps) => {
     useCommonConfigurationExtension(cm),
   )
 
-  const cacheUpdateListenerExtension = useMemo(
-    () =>
-      EditorView.updateListener.of((e) => {
-        if (!e.docChanged) return
-        cache.debouncedUpdateCache(props.source.id, () => props.source.serialize())
-      }),
-    [props.source],
-  )
+  const awareness = useAtomValue(awarenessAtom)
 
   useEffect(() => {
     if (parentRef.current == null) return
@@ -79,8 +72,7 @@ const Codemirror = memo((props: CodemirrorProps) => {
         EditorViewStyle,
         // use ycollab to modify and share source object
         //TODO: add awareness
-        yCollab(props.source.source, null, { undoManager }),
-        cacheUpdateListenerExtension,
+        yCollab(props.source.source, awareness, { undoManager }),
       ],
       doc: props.source.source.toString(),
       parent: parentRef.current!,

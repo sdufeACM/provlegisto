@@ -1,4 +1,4 @@
-import useExtensionCompartment, { useCommonConfigurationExtension } from "@/hooks/useExtensionCompartment"
+import useExtensionCompartment, { useCommonConfigurationExtension } from "@/lib/hooks/useExtensionCompartment"
 import { editorThemeExtensionAtom } from "@/store/setting/ui"
 import { Compartment, Extension } from "@codemirror/state"
 import { EditorView } from "@codemirror/view"
@@ -89,5 +89,5 @@ export default function Editor(props: EditorProps) {
     }
   }, [props.text])
 
-  return <div className={clsx("w-full", props.className, "border border-slate-400")} ref={parentRef}></div>
+  return <div className={clsx("w-full", props.className)} ref={parentRef}></div>
 }
